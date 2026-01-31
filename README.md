@@ -3,9 +3,39 @@
 ## 📌 Przegląd Projektu
 Projekt realizuje end-to-end potok danych w **architekturze Kappa**, służący do analizy symulowanego strumienia danych o ruchu pojazdów w Krakowie. System monitoruje przemieszczanie się pojazdów między strefami miejskimi (Centrum, Kazimierz, Bronowice itd.) i oblicza bilans pojazdów w czasie rzeczywistym.
 
-### 🏗 Schemat Architektury
+### 🏗 Schemat i Uzadafnienie Wyboru Architektury
+Wybór architektury Kappa wynika z priorytetu przetwarzania danych w czasie rzeczywistym oraz dążenia do uproszczenia struktury systemu. W monitorowaniu ruchu drogowego kluczowy jest najniższy możliwy czas latencji (opóźnienia), co czyni Kappę rozwiązaniem optymalnym ze względu na rezygnację z powolnej warstwy wsadowej (batch). Dzięki zastosowaniu silnika Spark Structured Streaming oraz technologii Delta Lake, system zapewnia pełną spójność danych przy użyciu jednego kodu źródłowego dla danych bieżących i historycznych. Pozwala to na błyskawiczną reakcję na zdarzenia drogowe i eliminuje ryzyko rozbieżności wyników, które występuje w architekturze Lambda.
 
 
+Architektura została podzielona na trzy główne warstwy, z których każda odpowiada za inny etap cyklu życia danych:
+
+1. WARSTWA UNIFIED LOG (Ingestia)
+Jest to punkt wejścia dla wszystkich danych systemowych. Służy jako niezmienny rejestr zdarzeń, który przechowuje surowy strumień informacji przed ich przetworzeniem.
+
+Funkcja: Przyjmowanie komunikatów JSON o ruchu pojazdów i zapewnienie ich trwałości.
+
+Zasoby: Wykorzystanie usługi Azure Event Hubs, która umożliwia wielokrotny odczyt tego samego strumienia (istotne przy ewentualnym przeliczaniu danych historycznych).
+
+2. WARSTWA PROCESSING (Przetwarzanie)
+W tej warstwie odbywa się cała logika analityczna systemu. Dane są pobierane ze strumienia i przekształcane w użyteczne informacje biznesowe.
+
+Funkcja: Filtrowanie i walidacja formatu przychodzących danych.
+
+Grupowanie zdarzeń w oknach czasowych (Windowing).
+
+Obliczanie bilansu pojazdów w poszczególnych strefach w czasie rzeczywistym.
+
+Zarządzanie stanem przetwarzania (Checkpointing), co pozwala na wznowienie pracy systemu po awarii bez utraty danych.
+
+3. WARSTWA STORAGE (Składowanie)
+Końcowy etap, w którym przetworzone wyniki są zapisywane w sposób trwały i uporządkowany.
+
+Funkcja: Utrwalanie wyników analizy w formacie gotowym do raportowania.
+
+Zasoby: Wykorzystanie formatu Delta Lake na magazynie danych Azure. Zapewnia to transakcyjność oraz wysoką wydajność przy odczycie danych przez narzędzia do wizualizacji.
+
+<img width="1341" height="384" alt="image" src="images/kappa_diagram/jpeg" />
+*Diagram architektury Kappa*
 ---
 
 ## 🛠 Komponenty Techniczne
@@ -36,7 +66,7 @@ Główna logika zawarta w notatniku `obrobka_danych.ipynb` obejmuje:
 ## 📊 Wizualizacje i Dowody Działania
 
 ### Bilans pojazdów w strefach (Real-time Bar Chart)
-<img width="1341" height="384" alt="image" src="https://github.com/user-attachments/assets/01fd66fa-5b83-4041-8a9c-c38495ba2107" />
+<img width="1341" height="384" alt="image" src="images/pipeline_running.png" />
 *Wykres przedstawia dynamiczny bilans aut w dzielnicach Krakowa.*
 
 ---
