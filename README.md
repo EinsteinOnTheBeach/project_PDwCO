@@ -34,7 +34,7 @@ Funkcja: Utrwalanie wyników analizy w formacie gotowym do raportowania.
 
 Zasoby: Wykorzystanie formatu Delta Lake na magazynie danych Azure. Zapewnia to transakcyjność oraz wysoką wydajność przy odczycie danych przez narzędzia do wizualizacji.
 
-<img width="1341" height="384" alt="image" src="images/kappa_diagram/jpeg" />
+<img width="1341" height="384" alt="image" src="images/kappa_diagram.jpeg" />
 *Diagram architektury Kappa*
 ---
 
